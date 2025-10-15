@@ -28,33 +28,67 @@ class AuthController extends Controller
         ], 201);
     }
 
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //         'password' => 'required|string',
+    //     ]);
+
+    //     if (!Auth::attempt($request->only('email', 'password'))) {
+    //         throw ValidationException::withMessages([
+    //             'email' => ['The provided credentials are incorrect.']
+    //         ]);
+    //     }
+
+    //     $user = Auth::user();
+
+    //     if (!$user->hasVerifiedEmail()) {
+    //         return response()->json(['message' => 'Email not verified.'], 403);
+    //     }
+
+    //     $token = $user->createToken('api-token')->plainTextToken;
+
+    //     return response()->json([
+    //         'access_token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => $user,
+    //     ]);
+    // }
+
     public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|string',
+    ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.']
-            ]);
-        }
+    $user = \App\Models\User::where('email', $request->email)->first();
 
-        $user = Auth::user();
-
-        if (!$user->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Email not verified.'], 403);
-        }
-
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
-        ]);
+    if (!$user) {
+        return response()->json(['message' => 'Invalid email or password.'], 401);
     }
+
+    // 🧠 আগে ভেরিফাই চেক করো
+    if (!$user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'Email not verified.'], 403);
+    }
+
+    // ✅ এরপর পাসওয়ার্ড চেক করো
+    if (!\Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid email or password.'], 401);
+    }
+
+    // 🔑 টোকেন তৈরি করো
+    $token = $user->createToken('api-token')->plainTextToken;
+
+    return response()->json([
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => $user,
+    ]);
+}
+
 
     public function logout(Request $request)
     {

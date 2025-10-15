@@ -14,9 +14,9 @@ class ForgotPasswordController extends Controller
         $request->validate(['email' => 'required|email']);
 
         // Custom reset URL
-        ResetPassword::createUrlUsing(function ($user, string $token) {
-            return env('FRONTEND_URL') . '/#/reset-password?token=' . $token . '&email=' . urlencode($user->email);
-        });
+       ResetPassword::createUrlUsing(function ($user, string $token) {
+    return env('FRONTEND_URL') . '#/reset-password/' . $token . '/' . urlencode($user->email);
+});
 
         $status = Password::sendResetLink($request->only('email'));
 
